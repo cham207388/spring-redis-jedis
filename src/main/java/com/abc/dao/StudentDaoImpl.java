@@ -1,5 +1,6 @@
 package com.abc.dao;
 
+import com.abc.constant.Keys;
 import com.abc.entity.Student;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class StudentDaoImpl implements StudentDao {
     @Override
     public boolean saveStudent(Student student) {
         try {
-            redisTemplate.opsForHash().put("user", student.getId().toString(), student);
+            redisTemplate.opsForHash().put(Keys.USER, student.getId().toString(), student);
             return true;
         } catch (Exception ex) {
             log.error("Error saving student with id : {}\n--> {}", student.getId(), ex.getMessage());
@@ -36,7 +37,13 @@ public class StudentDaoImpl implements StudentDao {
     @Override
     public List<Student> findAll() {
         try {
-            return redisTemplate.opsForHash().values("user");
+            List values = redisTemplate.opsForHash().values(Keys.USER);
+            if (values.isEmpty()) {
+                log.debug("No users to fetch!");
+                return Collections.emptyList();
+            } else {
+                return values;
+            }
         } catch (Exception ex) {
             log.error("Error fetching user hash");
             return Collections.emptyList();
